@@ -1,5 +1,7 @@
 #lang racket
 
+(provide var run == ==-no-check exist conde lambdae matche)
+
 (define-syntax var
   (syntax-rules ()
     ((_ x) (vector x))))
