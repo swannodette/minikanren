@@ -20,12 +20,11 @@
 
 (define walk
   (lambda (v s)
-    (display (list v s))
     (cond
       ((var? v)
        (let ((a (assq v s)))
          (cond
-           (a (walk (rhs a)))
+           (a (walk (rhs a) s))
            (else v))))
       (else v))))
 
