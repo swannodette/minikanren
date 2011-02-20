@@ -1,6 +1,6 @@
 #lang racket
 
-(provide var run == ==-no-check exist conde lambdae matche)
+(provide var run == ==-no-check exist conde)
 
 (define-syntax var
   (syntax-rules ()
