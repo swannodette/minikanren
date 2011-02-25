@@ -128,7 +128,7 @@
 
 (define-syntax case-inf
   (syntax-rules ()
-    ((_ e (() e0) ((fp) e1) ((ap) e2) ((a f) e3))
+    ((_ e (() e0) ((fp) e1) ((w) ew) ((ap) e2) ((a f) e3))
      (let ((a-inf e))
        (cond
          ((not a-inf) e0)
@@ -136,6 +136,9 @@
                                e1))
          ((and (pair? a-inf) (procedure? (cdr a-inf)))
           (let ((a (car a-inf)) (f (cdr a-inf))) e3))
+         ((w? a-inf) (w-check a-inf
+                              (lambda (fp) e1)
+                              (lambda () (let ((w a-inf)) ew))))
          (else (let ((ap a-inf)) e2)))))))
 
 (define-syntax ==
@@ -173,6 +176,12 @@
     (case-inf a-inf
               (() (f))
               ((fp) (inc (mplus (f) fp)))
+              ((w) (lambdaf@ () (let ((a-inf (f)))
+                                  (lambdaf@ ()
+                                            (let ((a-inf (f)))
+                                              (if (w? a-inf)
+                                                  (append a-inf w)
+                                                  (mplus a-inf (lambdaf@ () w))))))))
               ((a) (choice a f))
               ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
@@ -194,6 +203,9 @@
     (case-inf a-inf
               (() (mzero))
               ((f) (inc (bind (f) g)))
+              ((w) (map (lambda (ss)
+                          (make-ss (ss-cache ss) (ss-ansv* ss)
+                                   (lambdaf@ () (bind ((ss-f ss)) g))))))
               ((a) (g a))
               ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
@@ -214,6 +226,7 @@
         (case-inf (f)
                   (() '())
                   ((f) (take n f))
+                  ((w) '())
                   ((a) a)
                   ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
 
@@ -226,3 +239,19 @@
 (define ss-cache (lambda (ss) (vector-ref ss 1)))
 (define ss-ansv* (lambda (ss) (vector-ref ss 2)))
 (define ss-f (lambda (ss) (vector-ref ss 3)))
+
+(define ss-ready? (lambda (ss) (not (eq? (cache-ansv* (ss-cache ss)) (ss-ansv* ss)))))
+
+(define w? (lambda (x) (and (pair? x) (ss? (car x)))))
+
+(define w-check
+  (lambda (w sk fk)
+         (let loop ((w w) (a '()))
+           (cond
+            ((null? w) (fk))
+            ((ss-ready? (car w))
+             (sk (lambdaf@ ()
+                           (let ((f (ss-f (car w)))
+                                 (w (append (reverse a) (cdr w))))
+                             (if (null? w) (f) (mplus (f) (lambdaf@ () w)))))))
+            (else (loop (cdr w) (cons (car w) a)))))))
