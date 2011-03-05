@@ -205,7 +205,8 @@
               ((f) (inc (bind (f) g)))
               ((w) (map (lambda (ss)
                           (make-ss (ss-cache ss) (ss-ansv* ss)
-                                   (lambdaf@ () (bind ((ss-f ss)) g))))))
+                                   (lambdaf@ () (bind ((ss-f ss)) g))))
+                        w))
               ((a) (g a))
               ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
