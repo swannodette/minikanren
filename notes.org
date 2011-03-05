@@ -1,0 +1,55 @@
+* Notes on miniKanren
+** Goals and Goal Generators
+   - mplus takes two arguments, an a-inf on the left hand side and a
+     function on the right hand side. This is because mplus* ensures
+     that if we only have a single expression we just evaluate to the
+     single exprsesion.
+
+     if the left hand argument is a function, we have a stream. We
+     create a thunk of (mplus (right-hand-side) a-inf).
+
+     bind when encountering a conde thunk, wraps it another thunk that
+     calls bind with the result of running the conde thunk and the
+     goal.
+
+     WHY:
+     
+     a) run a call to a function w/ contains a conde which simply
+        recursively calls the function again.
+
+     b) think returns a thunk
+
+     c) take runs the thunk, which calls bind on the recursive goal
+        which returns thunk.
+
+     d) and take calls that
+
+     ADD A SINGLE other conde clause which always binds a var to true
+
+     a) main conde returns a thunk
+
+     b) take calls the thunk
+
+     c) mplus (recursive call) (recursive call binding var to true)
+        - first recursive call binds return a conde thunk
+        - second recursive call binds
+** bind vs. mplus
+   Don't forget, bind is for conjuction, mplus is for
+   disjunction. Bind only appears in (exist ...) and in a conde
+   *line*.
+
+   - if a conde term appears in a bind line.
+
+     (define alwayso (any-o success))
+     
+     (define anyo
+       (lambda (g)
+         (conde
+           (g success)
+           ((any-o g))))
+
+     (run 5 (q)
+       (conde
+         ((== false q) alwayso)
+         ((anyo (== true q))))
+       (== true q))

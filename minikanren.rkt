@@ -1,6 +1,13 @@
 #lang racket
 
-(provide var run == ==-no-check exist conde)
+(provide var
+         run
+         ==
+         ==-no-check
+         exist
+         conde
+         success
+         fail)
 
 (define-syntax var
   (syntax-rules ()
@@ -109,6 +116,14 @@
 (define-syntax lambdaf@
   (syntax-rules ()
     ((_ () e) (lambda () e))))
+
+(define-syntax success
+  (syntax-rules ()
+    ((_) (lambdag@ (a) a))))
+
+(define-syntax fail
+  (syntax-rules ()
+    ((_) (lambdag@ (a) (mzero)))))
 
 (define-syntax mzero
   (syntax-rules ()
