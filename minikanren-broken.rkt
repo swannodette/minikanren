@@ -6,7 +6,7 @@
          ==-no-check
          exist
          conde
-         succeed
+         success
          fail)
 
 (define-syntax var
@@ -117,11 +117,13 @@
   (syntax-rules ()
     ((_ () e) (lambda () e))))
 
-(define succeed
-  (lambdag@ (a) a))
+(define-syntax success
+  (syntax-rules ()
+    ((_) (lambdag@ (a) a))))
 
-(define fail
-  (lambdag@ (a) (mzero)))
+(define-syntax fail
+  (syntax-rules ()
+    ((_) (lambdag@ (a) (mzero)))))
 
 (define-syntax mzero
   (syntax-rules ()
@@ -171,10 +173,9 @@
   (syntax-rules ()
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
-               (inc
-                (mplus* (bind* (g0 a) g ...)
-                        (bind* (g1 a) gp ...)
-                        ...))))))
+               (mplus* (bind* (g0 a) g ...)
+                       (bind* (g1 a) gp ...)
+                       ...)))))
 
 (define-syntax mplus*
   (syntax-rules ()
@@ -185,7 +186,7 @@
   (lambda (a-inf f)
     (case-inf a-inf
               (() (f))
-              ((fp) (inc (mplus (f) fp)))
+              ((fp) (mplus (f) fp))
               ((a) (choice a f))
               ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
@@ -206,7 +207,7 @@
   (lambda (a-inf g)
     (case-inf a-inf
               (() (mzero))
-              ((f) (inc (bind (f) g)))
+              ((f) (bind (f) g))
               ((a) (g a))
               ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 

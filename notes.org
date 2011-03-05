@@ -1,4 +1,40 @@
 * Notes on miniKanren
+** Open Questions
+   A. mplus - why does it need to thunk streams ?
+   B. bind - why does it need to thunk streams ?
+
+   Can we come up with a small case that illustrates the necessity ?
+   
+   One issue is that miniKanren's macros are highly recursive so it's
+   difficult to reason about even simple programs (you could say that
+   miniKanren generate LP assembly).
+
+   EXAMPLE:
+
+     (define alwayso (any-o success))
+     
+     (define anyo
+       (lambda (g)
+         (conde
+           (g success)
+           ((any-o g))))
+
+     (run 5 (q)
+       (conde
+         ((== false q) alwayso)
+         ((anyo (== true q))))
+       (== true q))
+
+   if we eliminate the thunking in mplus and bind the above program
+   *still* works.
+
+   even if we remove thunking from conde it the above program still
+   works. What shape does a program have to have for the thunking to
+   actual matter?
+
+   I think my version of miniKanren is pretty much idential to the
+   non-thunked version of miniKanren.
+
 ** Goals and Goal Generators
    - mplus takes two arguments, an a-inf on the left hand side and a
      function on the right hand side. This is because mplus* ensures
@@ -39,17 +75,3 @@
    *line*.
 
    - if a conde term appears in a bind line.
-
-     (define alwayso (any-o success))
-     
-     (define anyo
-       (lambda (g)
-         (conde
-           (g success)
-           ((any-o g))))
-
-     (run 5 (q)
-       (conde
-         ((== false q) alwayso)
-         ((anyo (== true q))))
-       (== true q))
