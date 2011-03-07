@@ -1,4 +1,9 @@
 * Notes on miniKanren
+** NEXT STEPS
+   step through the behavior of pluso w/ good and broken miniKanren
+** WHAT SHAPE ?
+   what shape does a program have to have for the thunking to matter?
+   We want the shortest possible program that illustrates the issue.
 ** Open Questions
    A. mplus - why does it need to thunk streams ?
    B. bind - why does it need to thunk streams ?
@@ -34,7 +39,6 @@
 
    I think my version of miniKanren is pretty much idential to the
    non-thunked version of miniKanren.
-
 ** Goals and Goal Generators
    - mplus takes two arguments, an a-inf on the left hand side and a
      function on the right hand side. This is because mplus* ensures

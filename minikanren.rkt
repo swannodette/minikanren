@@ -7,7 +7,18 @@
          exist
          conde
          succeed
-         fail)
+         fail
+         lambdaf@
+         lambdag@
+         bind*)
+
+(define-syntax nom
+  (syntax-rules ()
+    ((_ x) (vector x))))
+
+(define-syntax nom?
+  (syntax-rules ()
+    ((_ x) (vector? x))))
 
 (define-syntax var
   (syntax-rules ()
@@ -105,7 +116,7 @@
   (lambda (v s)
     (let ((v (walk v s)))
       (cond
-        ((var? v) (ext-s (reify-name (length s) s)))
+        ((var? v) (ext-s v (reify-name (length s)) s))
         ((pair? v) (reify-s (cdr v) (reify-s (car v) s)))
         (else s)))))
 

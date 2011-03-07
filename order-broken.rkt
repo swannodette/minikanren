@@ -6,6 +6,8 @@
   (syntax-rules ()
    ((_ x ...) #f)))
 
+;; ok this works
+
 (define repeat
   (lambda (n)
     (define repeater
@@ -23,8 +25,7 @@
 (define test
   (lambda (x)
     (conde
-     ((ones x))
-     ((twos x))
+     ((ones x) (twos x))
      ((threes x))
      ((fours x)))))
 
