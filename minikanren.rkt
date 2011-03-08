@@ -75,7 +75,7 @@
                     (else (ext-s u v s))))
         ((var? v) (ext-s v u s))
         ((and (pair? u) (pair? v))
-         (let ((s (unify (cdr u) (cdr v) s)))
+         (let ((s (unify (car u) (car v) s)))
            (and s (unify (cdr u) (cdr v) s))))
         ((equal? u v) s)
         (else #f)))))
