@@ -6,8 +6,19 @@
          ==-no-check
          exist
          conde
-         success
-         fail)
+         succeed
+         fail
+         lambdaf@
+         lambdag@
+         bind*)
+
+(define-syntax nom
+  (syntax-rules ()
+    ((_ x) (vector x))))
+
+(define-syntax nom?
+  (syntax-rules ()
+    ((_ x) (vector? x))))
 
 (define-syntax var
   (syntax-rules ()
@@ -64,7 +75,7 @@
                     (else (ext-s u v s))))
         ((var? v) (ext-s v u s))
         ((and (pair? u) (pair? v))
-         (let ((s (unify (cdr u) (cdr v) s)))
+         (let ((s (unify (car u) (car v) s)))
            (and s (unify (cdr u) (cdr v) s))))
         ((equal? u v) s)
         (else #f)))))
@@ -105,25 +116,23 @@
   (lambda (v s)
     (let ((v (walk v s)))
       (cond
-        ((var? v) (ext-s (reify-name (length s) s)))
+        ((var? v) (ext-s v (reify-name (length s)) s))
         ((pair? v) (reify-s (cdr v) (reify-s (car v) s)))
         (else s)))))
 
 (define-syntax lambdag@
   (syntax-rules ()
-    ((_ (s) e) (lambda (s) e))))
+    ((_ (s) e ...) (lambda (s) e ...))))
 
 (define-syntax lambdaf@
   (syntax-rules ()
-    ((_ () e) (lambda () e))))
+    ((_ () e ...) (lambda () e ...))))
 
-(define-syntax success
-  (syntax-rules ()
-    ((_) (lambdag@ (a) a))))
+(define succeed
+  (lambdag@ (a) a))
 
-(define-syntax fail
-  (syntax-rules ()
-    ((_) (lambdag@ (a) (mzero)))))
+(define fail
+  (lambdag@ (a) (mzero)))
 
 (define-syntax mzero
   (syntax-rules ()
@@ -173,7 +182,7 @@
   (syntax-rules ()
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
-               (mplus* (bind* (g0 a) g ...)
+               (mplus* (bind* (g0 a) g ...) ;; INC
                        (bind* (g1 a) gp ...)
                        ...)))))
 
@@ -186,7 +195,7 @@
   (lambda (a-inf f)
     (case-inf a-inf
               (() (f))
-              ((fp) (mplus (f) fp))
+              ((fp) (inc (mplus (f) fp))) ;; INC
               ((a) (choice a f))
               ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
@@ -194,8 +203,7 @@
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
      (lambdag@ (a)
-               (inc
-                (let ((x (var 'x)) ...)
+               (inc (let ((x (var 'x)) ...) ;; INC
                   (bind* (g0 a) g ...)))))))
 
 (define-syntax bind*
@@ -207,7 +215,7 @@
   (lambda (a-inf g)
     (case-inf a-inf
               (() (mzero))
-              ((f) (bind (f) g))
+              ((f) (inc (bind (f) g))) ;; INC
               ((a) (g a))
               ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
