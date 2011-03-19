@@ -10,7 +10,9 @@
          fail
          lambdaf@
          lambdag@
-         bind*)
+         bind*
+         inc
+         case-inf)
 
 (define-syntax nom
   (syntax-rules ()

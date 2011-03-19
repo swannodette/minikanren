@@ -1,6 +1,7 @@
 #lang racket
 
 (provide var run == ==-no-check exist conde)
+(require (only-in rnrs for-all))
 
 (define-syntax var
   (syntax-rules ()
@@ -76,11 +77,6 @@
         ((equal? u v) s)
         (else #f)))))
 
-(define reify
-  (lambda (v s)
-    (let ((v (walk* v s)))
-      (walk* v (reify-s v empty-s)))))
-
 (define walk*
   (lambda (v s)
     (let ((v (walk v s)))
@@ -93,14 +89,6 @@
 (define reify-name
   (lambda (n)
     (string->symbol (string-append "_." (number->string n)))))
-
-(define reify-s
-  (lambda (v s)
-    (let ((v (walk v s)))
-      (cond
-        ((var? v) (ext-s (reify-name (length s) s)))
-        ((pair? v) (reify-s (cdr v) (reify-s (car v) s)))
-        (else s)))))
 
 (define-syntax lambdag@
   (syntax-rules ()
@@ -177,11 +165,9 @@
               (() (f))
               ((fp) (inc (mplus (f) fp)))
               ((w) (lambdaf@ () (let ((a-inf (f)))
-                                  (lambdaf@ ()
-                                            (let ((a-inf (f)))
-                                              (if (w? a-inf)
-                                                  (append a-inf w)
-                                                  (mplus a-inf (lambdaf@ () w))))))))
+                                  (if (w? a-inf)
+                                      (append a-inf w)
+                                      (mplus a-inf (lambdaf@ () w))))))
               ((a) (choice a f))
               ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
@@ -256,3 +242,75 @@
                                  (w (append (reverse a) (cdr w))))
                              (if (null? w) (f) (mplus (f) (lambdaf@ () w)))))))
             (else (loop (cdr w) (cons (car w) a)))))))
+
+(define make-reify
+  (lambda (rep)
+    (lambda (v s)
+      (let ((v (walk* v s)))
+        (walk* v (reify-s rep v empty-s))))))
+
+(define reify (make-reify reify-name))
+
+(define reify-v
+  (lambda (n)
+    (var n)))
+
+(define reify-var (make-reify reify-v))
+
+(define reify-s
+  (lambda (rep v s)
+    (let ((v (walk v s)))
+      (cond
+       ((var? v) (ext-s-no-check v (rep (length s)) s))
+       ((pair? v) (reify-s rep (cdr v) (reify-s rep (car v) s)))
+       (else s)))))
+
+(define-syntax tabled
+  (syntax-rules ()
+    ((_ (x ...) g g* ...)
+     (let ((table '()))
+       (lambda (x ...)
+         (let ((argv (list x ...)))
+           (lambdag@ (s)
+             (let ((key (reify argv s)))
+               (cond
+                ((assoc key table)
+                   => (lambda (key.cache)
+                        (reuse argv (cdr key.cache) s)))
+                (else (let ((cache (make-cache '())))
+                        (set! table (cons (key . cache) table))
+                        ((exist () g g* ... (master argv cache)) s))))))))))))
+
+(define master
+  (lambda (argv cache)
+    (lambdag@ (s)
+      (and
+       (for-all
+        (lambda (ansv) (not (alpha-equiv? argv ansv s)))
+        (cache-ansv* cache))
+       (begin
+         (cache-ansv*-set! cache (cons (reify-var argv s) (cache-ansv* cache)))
+         s)))))
+
+(define alpha-equiv?
+  (lambda (x y s)
+    (equal? (reify x s) (reify y s))))
+
+(define reuse
+  (lambda (argv cache s)
+    (let fix ((start (cache-ansv* cache)) (end '()))
+      (let loop ((ansv* start))
+        (if (eq? ansv* end)
+            (list (make-ss cache start (lambdaf@ () (fix (cache-ansv* cache) start))))
+            (choice (subunify argv (reify-var (car ansv*) s) s)
+                    (lambdaf@ () (loop (cdr ansv*)))))))))
+
+(define subunify
+  (lambda (arg ans s)
+    (let ((arg (walk arg s)))
+      (cond
+       ((eq? arg ans) s)
+       ((var? arg) (ext-s-no-check arg ans s))
+       ((pair? arg) (subunify (cdr arg) (cdr ans)
+                              (subunify (car arg) (car ans) s)))
+       (else s)))))
