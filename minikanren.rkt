@@ -11,7 +11,6 @@
          lambdaf@
          lambdag@
          bind*
-         inc
          case-inf)
 
 (define-syntax nom
@@ -148,10 +147,6 @@
   (syntax-rules ()
     ((_ a f) (cons a f))))
 
-(define-syntax inc
-  (syntax-rules ()
-    ((_ e) (lambdaf@ () e))))
-
 (define-syntax case-inf
   (syntax-rules ()
     ((_ e (() e0) ((fp) e1) ((vp) e2) ((ap) e3) ((a f) e4))
@@ -186,10 +181,9 @@
   (syntax-rules ()
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
-       (inc
-        (mplus* (bind* (g0 a) g ...)
-                (bind* (g1 a) gp ...)
-                ...))))))
+       (mplus* (bind* (g0 a) g ...)
+               (bind* (g1 a) gp ...)
+               ...)))))
 
 (define-syntax mplus*
   (syntax-rules ()
@@ -200,7 +194,7 @@
   (lambda (a-inf f)
     (case-inf a-inf
       (() (f))
-      ((fp) (inc (mplus (f) fp)))
+      ((fp) (mplus (f) fp))
       ((v) (let ((a (vector-ref v 0))
                  (g (vector-ref v 1)))
              (vector (mplus a f) g)))
@@ -211,9 +205,8 @@
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
      (lambdag@ (a)
-       (inc
-        (let ((x (var 'x)) ...)
-          (bind* (g0 a) g ...)))))))
+       (let ((x (var 'x)) ...)
+         (bind* (g0 a) g ...))))))
 
 (define-syntax bind*
   (syntax-rules ()
@@ -227,7 +220,7 @@
   (lambda (a-inf g)
     (case-inf a-inf
       (() (mzero))
-      ((f) (inc (bind (f) g)))
+      ((f) (bind (f) g))
       ((v) (vector (bind (vector-ref v 0) g)
                    (vector-ref v 1)))
       ((a) (g a))
@@ -252,6 +245,6 @@
           ((f) (take n f))
           ((v) (let ((a (vector-ref v 0))
                      (g (vector-ref v 1)))
-                 (take n (bind a g))))
+                 (take n (lambda () (bind a g)))))
           ((a) a)
           ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
