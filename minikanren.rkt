@@ -201,6 +201,9 @@
     (case-inf a-inf
       (() (f))
       ((fp) (inc (mplus (f) fp)))
+      ((v) (let ((a (vector-ref v 0))
+                 (fp (vector-ref v 1)))
+             (vector (mplus a f) fp)))
       ((a) (choice a f))
       ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
