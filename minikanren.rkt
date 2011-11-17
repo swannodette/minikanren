@@ -154,15 +154,17 @@
 
 (define-syntax case-inf
   (syntax-rules ()
-    ((_ e (() e0) ((fp) e1) ((ap) e2) ((a f) e3))
+    ((_ e (() e0) ((fp) e1) ((vp) e2) ((ap) e3) ((a f) e4))
      (let ((a-inf e))
        (cond
          ((not a-inf) e0)
          ((procedure? a-inf) (let ((fp a-inf))
                                e1))
+         ((vector? a-inf) (let ((vp a-inf))
+                            e2))
          ((and (pair? a-inf) (procedure? (cdr a-inf)))
-          (let ((a (car a-inf)) (f (cdr a-inf))) e3))
-         (else (let ((ap a-inf)) e2)))))))
+          (let ((a (car a-inf)) (f (cdr a-inf))) e4))
+         (else (let ((ap a-inf)) e3)))))))
 
 (define-syntax ==
   (syntax-rules ()
@@ -223,6 +225,8 @@
     (case-inf a-inf
       (() (mzero))
       ((f) (inc (bind (f) g)))
+      ((v) (vector (g (vector-ref 1))
+                   (vector-ref v 0)))
       ((a) (g a))
       ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
