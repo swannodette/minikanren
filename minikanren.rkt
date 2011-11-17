@@ -202,8 +202,8 @@
       (() (f))
       ((fp) (inc (mplus (f) fp)))
       ((v) (let ((a (vector-ref v 0))
-                 (fp (vector-ref v 1)))
-             (vector (mplus a f) fp)))
+                 (g (vector-ref v 1)))
+             (vector (mplus a f) g)))
       ((a) (choice a f))
       ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
@@ -228,8 +228,8 @@
     (case-inf a-inf
       (() (mzero))
       ((f) (inc (bind (f) g)))
-      ((v) (vector (g (vector-ref 1))
-                   (vector-ref v 0)))
+      ((v) (vector (bind (vector-ref 0) g)
+                   (vector-ref v 1)))
       ((a) (g a))
       ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
@@ -250,5 +250,8 @@
         (case-inf (f)
           (() '())
           ((f) (take n f))
+          ((v) (let ((a (vector-ref v 0))
+                     (g (vector-ref v 1)))
+                 (bind a g)))
           ((a) a)
           ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
