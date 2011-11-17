@@ -214,7 +214,7 @@
   (syntax-rules ()
     ((_ e) e)
     ((_ e g g0 ...)
-     (bind e
+     (vector e
        (lambdag@ (a)
          (bind* (g a) g0 ...))))))
 
