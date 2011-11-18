@@ -249,3 +249,48 @@
                  (take n (lambda () (bind a g)))))
           ((a) a)
           ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
+
+(define-syntax comment
+  (syntax-rules ()
+    ((_ ...) #f)))
+
+(run #f (q)
+      (fresh (x)
+        (== x 1)
+        (== q true)))
+
+(comment
+ (run #f (q)
+      (fresh (x)
+        (== x 1)
+        (== q true)))
+ )
+
+(comment
+ (let-values (((q) (vector 'q)))
+   (map
+    (lambda (a) (reify q a))
+    (take
+     #f
+     (lambda ()
+       ((lambda (a)
+          (let-values ()
+            ((lambda (a)
+               (let-values (((x) (vector 'x)))
+                 (vector
+                  ((lambda (a)
+                     (let-values (((c420) (unify x 1 a)))
+                       (if c420
+                         ((lambda (a) a) c420)
+                         (let-values () #f))))
+                   a)
+                  (lambda (a)
+                    ((lambda (a)
+                       (let-values (((c421) (unify q true a)))
+                         (if c421
+                           ((lambda (a) a) c421)
+                           (let-values () #f))))
+                     a)))))
+             a)))
+        empty-s)))))
+ )
