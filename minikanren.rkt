@@ -230,12 +230,21 @@
   (syntax-rules ()
     ((_ n (x) g0 g ...)
      (let ((x (var 'x)))
-      (map (lambda (a)
-             (reify x a))
-           (take n
-                 (lambdaf@ ()
-                   ((fresh () g0 g ...)
-                    empty-s))))))))
+       (map (lambda (a)
+              (reify x a))
+            (take n
+                  (lambdaf@ ()
+                    ((fresh () g0 g ...)
+                     empty-s))))))))
+
+(define-syntax run
+  (syntax-rules ()
+    ((_ n (x) g0 g ...)
+     (let ((x (var 'x)))
+       (take n
+             (lambdaf@ ()
+               ((fresh () g0 g ...)
+                empty-s)))))))
 
 (define take
   (lambda (n f)
@@ -247,31 +256,32 @@
           ((v) (let ((a (vector-ref v 0))
                      (g (vector-ref v 1)))
                  (take n (lambda () (bind a g)))))
-          ((a) a)
+          ((a) (list a))
           ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
 
 (define-syntax comment
   (syntax-rules ()
     ((_ ...) #f)))
 
-(run #f (q)
-      (fresh (x)
-        (== x 1)
-        (== q true)))
-
 (comment
  (run #f (q)
       (fresh (x)
         (== x 1)
         (== q true)))
+
+ (run #f (q)
+      (conde
+        ((== q #t))
+        ((== q #f))))
  )
 
 (comment
  (let-values (((q) (vector 'q)))
    (map
-    (lambda (a) (reify q a))
-    (take
-     #f
+    (lambda (a)
+      (display a) (display "\n")
+      (reify q a))
+    (take #f
      (lambda ()
        ((lambda (a)
           (let-values ()
@@ -279,16 +289,16 @@
                (let-values (((x) (vector 'x)))
                  (vector
                   ((lambda (a)
-                     (let-values (((c420) (unify x 1 a)))
-                       (if c420
-                         ((lambda (a) a) c420)
-                         (let-values () #f))))
+                     (let-values (((c456) (unify x 1 a)))
+                       (if c456
+                           ((lambda (a) a) c456)
+                           (let-values () #f))))
                    a)
                   (lambda (a)
                     ((lambda (a)
-                       (let-values (((c421) (unify q true a)))
-                         (if c421
-                           ((lambda (a) a) c421)
+                       (let-values (((c457) (unify q true a)))
+                         (if c457
+                           ((lambda (a) a) c457)
                            (let-values () #f))))
                      a)))))
              a)))
