@@ -229,12 +229,13 @@
 (define-syntax run
   (syntax-rules ()
     ((_ n (x) g0 g ...)
-     (take n
-           (lambdaf@ ()
-             ((fresh (x) g0 g ...
-                     (lambdag@ (a)
-                       (cons (reify x a) '())))
-              empty-s))))))
+     (let ((x (var 'x)))
+      (map (lambda (a)
+             (reify x a))
+           (take n
+                 (lambdaf@ ()
+                   ((fresh () g0 g ...)
+                    empty-s))))))))
 
 (define take
   (lambda (n f)
