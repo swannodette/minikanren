@@ -168,26 +168,26 @@
   (syntax-rules ()
     ((_ u v)
      (lambdag@ (a)
-               (cond
-                 ((unify u v a) => (lambda (a) (unit a)))
-                 (else (mzero)))))))
+       (cond
+         ((unify u v a) => (lambda (a) (unit a)))
+         (else (mzero)))))))
 
 (define-syntax ==-no-check
   (syntax-rules ()
     ((_ u v)
      (lambdag@ (a)
-               (cond
-                 ((unify-no-check u v a) => (lambda (a) (unit a)))
-                 (else (mzero)))))))
+       (cond
+         ((unify-no-check u v a) => (lambda (a) (unit a)))
+         (else (mzero)))))))
 
 (define-syntax conde
   (syntax-rules ()
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
-               (inc
-                (mplus* (bind* (g0 a) g ...)
-                        (bind* (g1 a) gp ...)
-                        ...))))))
+       (inc
+        (mplus* (bind* (g0 a) g ...)
+                (bind* (g1 a) gp ...)
+                ...))))))
 
 (define-syntax mplus*
   (syntax-rules ()
@@ -197,18 +197,18 @@
 (define mplus
   (lambda (a-inf f)
     (case-inf a-inf
-              (() (f))
-              ((fp) (inc (mplus (f) fp)))
-              ((a) (choice a f))
-              ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
+      (() (f))
+      ((fp) (inc (mplus (f) fp)))
+      ((a) (choice a f))
+      ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
 (define-syntax fresh
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
      (lambdag@ (a)
-               (inc
-                (let ((x (var 'x)) ...)
-                  (bind* (g0 a) g ...)))))))
+       (inc
+        (let ((x (var 'x)) ...)
+          (bind* (g0 a) g ...)))))))
 
 (define-syntax bind*
   (syntax-rules ()
@@ -218,27 +218,27 @@
 (define bind
   (lambda (a-inf g)
     (case-inf a-inf
-              (() (mzero))
-              ((f) (inc (bind (f) g)))
-              ((a) (g a))
-              ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
+      (() (mzero))
+      ((f) (inc (bind (f) g)))
+      ((a) (g a))
+      ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
 (define-syntax run
   (syntax-rules ()
     ((_ n (x) g0 g ...)
      (take n
            (lambdaf@ ()
-                     ((fresh (x) g0 g ...
-                             (lambdag@ (a)
-                                       (cons (reify x a) '())))
-                      empty-s))))))
+             ((fresh (x) g0 g ...
+                     (lambdag@ (a)
+                       (cons (reify x a) '())))
+              empty-s))))))
 
 (define take
   (lambda (n f)
     (if (and n (zero? n))
         '()
         (case-inf (f)
-                  (() '())
-                  ((f) (take n f))
-                  ((a) a)
-                  ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
+          (() '())
+          ((f) (take n f))
+          ((a) a)
+          ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
