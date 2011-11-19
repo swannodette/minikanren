@@ -316,31 +316,37 @@
                     t110 t210 t310 t410 t510 t610 t710 t810
                     t111 t211 t311 t411
                     t112 t212 t312 t412)
-                (== h `((,a1 ,a2 ,a3 ,a4 ,a5)
-                        (,b1 ,b2 ,b3 ,b4 ,b5)
-                        (,c1 ,c2 ,c3 ,c4 ,c5)
-                        (,d1 ,d2 ,d3 ,d4 ,d5)
-                        (,e1 ,e2 ,e3 ,e4 ,e5)))
-                (== a1 'norwegian)
-                (== c3 'milk)
-                (membo `(englishman ,t10 ,t20 ,t30 red) h)
-                (on-righto `(,t11 ,t21 ,t31 ,t41 ivory)
-                           `(,t51 ,t61 ,t71 ,t81 green) h)
-                (next-too `(norwegian ,t12 ,t22 ,t32 ,t42)
-                          `(,t52 ,t62 ,t72 ,t82 blue) h)
-                (membo `(,t13 kools ,t23 ,t33 yellow) h)
-                (membo `(spaniard ,t14 ,t24 dog ,t34) h)
-                (membo `(,t15 ,t25 coffee ,t35 green) h)
-                (membo `(ukrainian ,t16 tea ,t26 ,t36) h)
-                (membo `(,t17 luckystrikes oj ,t27 ,t37) h)
-                (membo `(japanese parliaments ,t18 ,t28 ,t38) h)
-                (membo `(,t19 oldgolds ,t29 snails ,t39) h)
-                (next-too `(,t100 ,t200 ,t300 horse ,t400) 
-                          `(,t500 kools ,t600 ,t700 ,t800) h)
-                (next-too `(,t110 ,t210 ,t310 fox ,t410)
-                          `(,t510 chesterfields ,t610 ,t710 ,t810) h)
-                (membo `(,t111 ,t211 water ,t311 ,t411) h)
-                (membo `(,t112 ,t212 ,t312 zebra ,t412) h)))))
+           (== h `((,a1 ,a2 ,a3 ,a4 ,a5)
+                   (,b1 ,b2 ,b3 ,b4 ,b5)
+                   (,c1 ,c2 ,c3 ,c4 ,c5)
+                   (,d1 ,d2 ,d3 ,d4 ,d5)
+                   (,e1 ,e2 ,e3 ,e4 ,e5)))
+           (== a1 'norwegian)
+           (== c3 'milk)
+           (next-too `(norwegian ,t12 ,t22 ,t32 ,t42)
+                     `(,t52 ,t62 ,t72 ,t82 blue) h)
+           
+           (membo `(ukrainian ,t16 tea ,t26 ,t36) h)
+           (membo `(englishman ,t10 ,t20 ,t30 red) h)
+           (membo `(,t13 kools ,t23 ,t33 yellow) h)
+           (membo `(spaniard ,t14 ,t24 dog ,t34) h)
+           (membo `(,t15 ,t25 coffee ,t35 green) h)
+           (membo `(,t17 luckystrikes oj ,t27 ,t37) h)
+           (membo `(japanese parliaments ,t18 ,t28 ,t38) h)
+           (membo `(,t19 oldgolds ,t29 snails ,t39) h)
+           (membo `(,t111 ,t211 water ,t311 ,t411) h)
+           (membo `(,t112 ,t212 ,t312 zebra ,t412) h)
+           (on-righto `(,t11 ,t21 ,t31 ,t41 ivory)
+                      `(,t51 ,t61 ,t71 ,t81 green) h)
+           (next-too `(,t100 ,t200 ,t300 horse ,t400) 
+                     `(,t500 kools ,t600 ,t700 ,t800) h)
+           (next-too `(,t110 ,t210 ,t310 fox ,t410)
+                     `(,t510 chesterfields ,t610 ,t710 ,t810) h)
+           ))))
+
+(comment
+ (time (zebrao))
+ )
 
 (define rember*o
   (lambda (x ls out)
@@ -371,8 +377,6 @@
 (define nevero (anyo fail))
 
 (comment
- (time (zebrao))
-
  ;; 79ms
  (time
   (run 60 (q)
