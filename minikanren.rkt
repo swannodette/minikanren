@@ -727,4 +727,12 @@
     (fresh (x y r)
       (*o x y r)
       (== `(,x ,y ,r) t))))
+
+ ;; 17s
+ (time
+  (run 9 (s)
+    (fresh (b q r)
+      (logo '(0 0 1 0 0 0 1) b q r)
+      (>1o q)
+      (== `(,b ,q ,r) s))))
  )
