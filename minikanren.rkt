@@ -1,25 +1,8 @@
 #lang racket
 
-(provide var
-         run
-         ==
-         ==-no-check
-         fresh
-         conde
-         succeed
-         fail
-         lambdaf@
-         lambdag@
-         bind*
-         case-inf)
-
 (define-syntax inc
   (syntax-rules ()
     ((_ e) (lambdaf@ () e))))
-
-(define-syntax comment
-  (syntax-rules ()
-    ((_ ...) #f)))
 
 (define-syntax var
   (syntax-rules ()
@@ -155,7 +138,7 @@
          ((not a-inf) e0)
          ((procedure? a-inf) (let ((fp a-inf))
                                e1))
-         ((vector? a-inf) (let ((vp a-inf))
+         ((vector? a-inf) (let ((vp a-inf)) ;; ADDED: to handle vector case
                             e2))
          ((and (pair? a-inf) (procedure? (cdr a-inf)))
           (let ((a (car a-inf)) (f (cdr a-inf))) e4))
@@ -181,7 +164,7 @@
   (syntax-rules ()
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
-       (vector a 
+       (vector a  ;; CHANGED: no need to use inc now
          (lambda (a)
            (mplus* (lazy-bind* (g0 a) g ...)
                    (lazy-bind* (g1 a) gp ...)
@@ -199,7 +182,7 @@
       ((fp) (inc (mplus (f) fp)))
       ((v) (let ((ap (vector-ref v 0))
                  (gp (vector-ref v 1)))
-             (inc (mplus (f) (lambdaf@ () (bind ap gp))))))
+             (inc (mplus (f) (lambdaf@ () (bind ap gp)))))) ;; ADDED: handle vector case
       ((a) (choice a f))
       ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
@@ -207,7 +190,7 @@
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
      (lambdag@ (a)
-       (vector a
+       (vector a ;; CHANGED: no need to use inc now
          (lambda (a) (let ((x (var 'x)) ...)
            (lazy-bind* (g0 a) g ...))))))))
 
@@ -215,7 +198,7 @@
   (syntax-rules ()
     ((_ (g s)) (vector s g))
     ((_ (g0 s) g1 ...)
-     (vector s
+     (vector s ;; CHANGED: we no longer run the first goal
        (lambdag@ (a)
          (bind* (g0 a) g1 ...))))
     ((_ s) s)))
@@ -224,7 +207,7 @@
   (syntax-rules ()
     ((_ e) e)
     ((_ e g0 g1 ...)
-     (vector e
+     (vector e ;; CHANGED: used by lazy-bind*
        (lambdag@ (a)
          (bind* (g0 a) g1 ...))))))
 
@@ -235,7 +218,7 @@
       ((f) (inc (bind (f) g)))
       ((v) (let ((ap (vector-ref v 0))
                  (gp (vector-ref v 1)))
-             (vector (inc (bind ap g)) gp)))
+             (vector (inc (bind ap g)) gp))) ;; CHANGED: we push the topmost goal to the bottom
       ((a) (g a))
       ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
@@ -243,7 +226,7 @@
   (syntax-rules ()
     ((_ n (x) g0 g ...)
      (let ((x (var 'x)))
-       (map (lambda (a)
+       (map (lambda (a)  ;; CHANGED: reify must be outside of take, otherwise it may run too early!
               (reify x a))
             (take n
                   (lambdaf@ ()
@@ -259,9 +242,13 @@
           ((f) (take n f))
           ((v) (let ((ap (vector-ref v 0))
                      (gp (vector-ref v 1)))
-                 (take n (lambda () (bind ap gp)))))
+                 (take n (lambda () (bind ap gp))))) ;; CHANGED: force the computations
           ((a) (list a))
           ((a f) (cons a (take (and n (- n 1)) f)))))))
+
+(define-syntax comment
+  (syntax-rules ()
+    ((_ ...) #f)))
 
 (define appendo
    (lambda (l s out)
@@ -314,7 +301,21 @@
                     b1 b2 b3 b4 b5
                     c1 c2 c3 c4 c5
                     d1 d2 d3 d4 d5
-                    e1 e2 e3 e4 e5)
+                    e1 e2 e3 e4 e5
+                    t10 t20 t30
+                    t11 t21 t31 t41 t51 t61 t71 t81
+                    t12 t22 t32 t42 t52 t62 t72 t82
+                    t13 t23 t33
+                    t14 t24 t34
+                    t15 t25 t35
+                    t16 t26 t36
+                    t17 t27 t37
+                    t18 t28 t38
+                    t19 t29 t39
+                    t100 t200 t300 t400 t500 t600 t700 t800
+                    t110 t210 t310 t410 t510 t610 t710 t810
+                    t111 t211 t311 t411
+                    t112 t212 t312 t412)
                 (== h `((,a1 ,a2 ,a3 ,a4 ,a5)
                         (,b1 ,b2 ,b3 ,b4 ,b5)
                         (,c1 ,c2 ,c3 ,c4 ,c5)
@@ -322,39 +323,24 @@
                         (,e1 ,e2 ,e3 ,e4 ,e5)))
                 (== a1 'norwegian)
                 (== c3 'milk)
-                (fresh (t1 t2 t3)
-                       (membo `(englishman ,t1 ,t2 ,t3 red) h))
-                (fresh (t1 t2 t3 t4 t5 t6 t7 t8)
-                  (on-righto `(,t1 ,t2 ,t3 ,t4 ivory)
-                             `(,t5 ,t6 ,t7 ,t8 green) h))
-                (fresh (t1 t2 t3 t4 t5 t6 t7 t8)
-                  (next-too `(norwegian ,t1 ,t2 ,t3 ,t4)
-                            `(,t5 ,t6 ,t7 ,t8 blue) h))
-                (fresh (t1 t2 t3)
-                       (membo `(,t1 kools ,t2 ,t3 yellow) h))
-                (fresh (t1 t2 t3)
-                       (membo `(spaniard ,t1 ,t2 dog ,t3) h))
-                (fresh (t1 t2 t3)
-                       (membo `(,t1 ,t2 coffee ,t3 green) h))
-                (fresh (t1 t2 t3)
-                       (membo `(ukrainian ,t1 tea ,t2 ,t3) h))
-                (fresh (t1 t2 t3)
-                       (membo `(,t1 luckystrikes oj ,t2 ,t3) h))
-                (fresh (t1 t2 t3)
-                       (membo `(japanese parliaments ,t1 ,t2 ,t3) h))
-                (fresh (t1 t2 t3)
-                       (membo `(,t1 oldgolds ,t2 snails ,t3) h))
-                (fresh (t1 t2 t3 t4 t5 t6 t7 t8)
-                  (next-too `(,t1 ,t2 ,t3 horse ,t4) 
-                            `(,t5 kools ,t6 ,t7 ,t8) h))
-                (fresh (t1 t2 t3 t4 t5 t6 t7 t8)
-                  (next-too `(,t1 ,t2 ,t3 fox ,t4)
-                            `(,t5 chesterfields ,t6 ,t7 ,t8) h))
-                (fresh (t1 t2 t3 t4)
-                       (membo `(,t1 ,t2 water ,t3 ,t4) h))
-                (fresh (t1 t2 t3 t4)
-                       (membo `(,t1 ,t2 ,t3 zebra ,t4) h))))))
-
+                (membo `(englishman ,t10 ,t20 ,t30 red) h)
+                (on-righto `(,t11 ,t21 ,t31 ,t41 ivory)
+                           `(,t51 ,t61 ,t71 ,t81 green) h)
+                (next-too `(norwegian ,t12 ,t22 ,t32 ,t42)
+                          `(,t52 ,t62 ,t72 ,t82 blue) h)
+                (membo `(,t13 kools ,t23 ,t33 yellow) h)
+                (membo `(spaniard ,t14 ,t24 dog ,t34) h)
+                (membo `(,t15 ,t25 coffee ,t35 green) h)
+                (membo `(ukrainian ,t16 tea ,t26 ,t36) h)
+                (membo `(,t17 luckystrikes oj ,t27 ,t37) h)
+                (membo `(japanese parliaments ,t18 ,t28 ,t38) h)
+                (membo `(,t19 oldgolds ,t29 snails ,t39) h)
+                (next-too `(,t100 ,t200 ,t300 horse ,t400) 
+                          `(,t500 kools ,t600 ,t700 ,t800) h)
+                (next-too `(,t110 ,t210 ,t310 fox ,t410)
+                          `(,t510 chesterfields ,t610 ,t710 ,t810) h)
+                (membo `(,t111 ,t211 water ,t311 ,t411) h)
+                (membo `(,t112 ,t212 ,t312 zebra ,t412) h)))))
 
 (define rember*o
   (lambda (x ls out)
@@ -417,24 +403,6 @@
  )
 
 (comment
- (define rember*o
-  (lambda (x ls out)
-    (conde
-      ((== '() ls) (== ls out))
-      ((fresh (a d b e)
-         (== `(,a . ,d) ls)
-         (conde
-           ((== `(,b . ,e) a)
-            (fresh (res0 res1)
-             (rember*o x a res0)
-             (rember*o x d res1)
-             (== `(,res0 . ,res1) out)))
-           ((== x a)
-             (rember*o x d out))
-           ((fresh (res)
-              (rember*o x d res)
-              (== `(,a . ,res) out)))))))))
-
  (run 6 (q)
       (fresh (l s)
         (appendo l s '(a b c d e))
