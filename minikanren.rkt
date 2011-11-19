@@ -14,14 +14,6 @@
          inc
          case-inf)
 
-(define-syntax nom
-  (syntax-rules ()
-    ((_ x) (vector x))))
-
-(define-syntax nom?
-  (syntax-rules ()
-    ((_ x) (vector? x))))
-
 (define-syntax var
   (syntax-rules ()
     ((_ x) (vector x))))
