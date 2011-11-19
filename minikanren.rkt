@@ -350,6 +350,21 @@
        (fresh (x l)
          (rember*o x l '((b) c d))
          (== `(,x ,l) q))))
+
+ (time
+  (do ((i 0 (+ i 1))) ((> i 1000))
+    (run #f (q)
+       (== #f #f)
+       (== #f #f)
+       (== #f #f)
+       (== #f #f)
+       (== #f #f)
+       (== #f #f)
+       (== #f #f)
+       (== #f #f)
+       (== #f #f)
+       (== #f #f)
+       (== #t #f))))
  )
 
 (comment
