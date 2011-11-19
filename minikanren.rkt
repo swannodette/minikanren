@@ -260,15 +260,23 @@
        ((fresh (a d res)
           (== `(,a . ,d) l)
           (appendo d s res)
-          (== `(,a . ,res) out)
-          )))))
+          (== `(,a . ,res) out))))))
 
 (comment
  ;; works!
+ ;; but not if appendo is the first goal
  (run 7 (q)
       (fresh (l s)
         (appendo l s '(a b c d e))
         (== `(,l ,s) q)))
+
+ ;; ~1000ms slightly slower
+ (time
+  (do ((i 0 (+ i 1))) ((> i 4000)) 
+    (run 7 (q)
+         (fresh (l s)
+           (appendo l s '(a b c d e))
+           (== `(,l ,s) q)))))
  )
 
 (comment
@@ -285,10 +293,21 @@
            (appendo l s '(a b c d e))
            (== `(,l ,s) q)))))
 
- ;; FIXME: weird interaction with conde
- (run #f (q)
-      (fresh (x)
-       (conde
-         ((== x 1) (== q #t))
-         ((== x 2) (== q #f)))))
+ (define f1 (fresh () f1))
+
+ (run 1 (q)
+      (conde
+        (f1)
+        ((== #f #f))))
+
+ (define f2
+   (fresh ()
+     (conde
+       (f2 (conde
+             (f2)
+             ((== #f #f))))
+       ((== #f #f)))))
+
+ (run 5 (q)
+      f2)
  )
