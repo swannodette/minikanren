@@ -182,8 +182,8 @@
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
        (inc
-        (mplus* (bind* (g0 a) g ...)
-                (bind* (g1 a) gp ...)
+        (mplus* (lazy-bind* (g0 a) g ...)
+                (lazy-bind* (g1 a) gp ...)
                 ...))))))
 
 (define-syntax mplus*
@@ -208,15 +208,23 @@
      (lambdag@ (a)
        (inc
         (let ((x (var 'x)) ...)
-          (bind* (g0 a) g ...)))))))
+          (lazy-bind* (g0 a) g ...)))))))
+
+(define-syntax lazy-bind*
+  (syntax-rules ()
+    ((_ (g s)) (vector s g))
+    ((_ (g0 s) g1 ...)
+     (vector s
+       (lambdag@ (a)
+         (bind* (g0 a) g1 ...))))))
 
 (define-syntax bind*
   (syntax-rules ()
     ((_ e) e)
-    ((_ e g g0 ...)
+    ((_ e g0 g1 ...)
      (vector e
        (lambdag@ (a)
-         (bind* (g a) g0 ...))))))
+         (bind* (g0 a) g1 ...))))))
 
 (define bind
   (lambda (a-inf g)
@@ -372,6 +380,16 @@
        (fresh (x l)
          (rember*o x l '((b) c d))
          (== `(,x ,l) q))))
+
+ (define nevero
+   (lambda ()
+     (fresh ()
+       (nevero))))
+
+ (run #f (q)
+   (nevero)
+   (== #t #f))
+
  )
 
 (comment
