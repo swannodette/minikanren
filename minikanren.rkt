@@ -4,7 +4,7 @@
          run
          ==
          ==-no-check
-         exist
+         fresh
          conde
          succeed
          fail
@@ -202,7 +202,7 @@
               ((a) (choice a f))
               ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
-(define-syntax exist
+(define-syntax fresh
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
      (lambdag@ (a)
@@ -228,7 +228,7 @@
     ((_ n (x) g0 g ...)
      (take n
            (lambdaf@ ()
-                     ((exist (x) g0 g ...
+                     ((fresh (x) g0 g ...
                              (lambdag@ (a)
                                        (cons (reify x a) '())))
                       empty-s))))))
