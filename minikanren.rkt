@@ -164,11 +164,12 @@
   (syntax-rules ()
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
-       (vector a  ;; CHANGED: no need to use inc now
-         (lambda (a)
-           (mplus* (lazy-bind* (g0 a) g ...)
-                   (lazy-bind* (g1 a) gp ...)
-                   ...)))))))
+       (inc
+        (vector a ;; CHANGED: return vector
+          (lambda (a^)
+            (mplus* (lazy-bind* (g0 a^) g ...)
+                    (lazy-bind* (g1 a^) gp ...)
+                    ...))))))))
 
 (define-syntax mplus*
   (syntax-rules ()
@@ -190,9 +191,10 @@
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
      (lambdag@ (a)
-       (vector a ;; CHANGED: no need to use inc now
-         (lambda (a) (let ((x (var 'x)) ...)
-           (lazy-bind* (g0 a) g ...))))))))
+       (inc
+        (vector a ;; CHANGED: return vector
+          (lambda (a) (let ((x (var 'x)) ...)
+                        (lazy-bind* (g0 a) g ...)))))))))
 
 (define-syntax lazy-bind*
   (syntax-rules ()
@@ -384,9 +386,10 @@
          (rember*o x l '((b) c d))
          (== `(,x ,l) q))))
 
-  (run #f (q)
-   nevero
-   (== #t #f))
+ (run #f (q)
+    nevero
+    (== #t #t)
+    (== #t #f))
  )
 
 (comment
