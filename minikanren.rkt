@@ -193,7 +193,7 @@
       ((fp) (mplus (f) fp))
       ((v) (let ((ap (vector-ref v 0))
                  (gp (vector-ref v 1)))
-             (vector (mplus ap f) gp)))
+             (mplus (f) (lambdaf@ () (bind ap gp)))))
       ((a) (choice a f))
       ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
@@ -223,27 +223,16 @@
       ((a) (g a))
       ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
-(comment
- (define-syntax run
-   (syntax-rules ()
-     ((_ n (x) g0 g ...)
-      (let ((x (var 'x)))
-        (map (lambda (a)
-               (reify x a))
-             (take n
-                   (lambdaf@ ()
-                     ((fresh () g0 g ...)
-                      empty-s))))))))
- )
-
 (define-syntax run
   (syntax-rules ()
     ((_ n (x) g0 g ...)
      (let ((x (var 'x)))
-       (take n
-             (lambdaf@ ()
-               ((fresh () g0 g ...)
-                empty-s)))))))
+       (map (lambda (a)
+              (reify x a))
+            (take n
+                  (lambdaf@ ()
+                    ((fresh () g0 g ...)
+                     empty-s))))))))
 
 (define take
   (lambda (n f)
@@ -264,12 +253,5 @@
       (fresh (x)
        (conde
          ((== x 1) (== q #t))
-         ((== q #f)))
-       (== x 1)))
-
- (run #f (q)
-      (fresh (x)
-        (== x 1)
-        (== q true)
-        (== x 1)))
+         ((== x 2) (== q #f)))))
  )
