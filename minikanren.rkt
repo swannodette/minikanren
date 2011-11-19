@@ -262,6 +262,32 @@
           (appendo d s res)
           (== `(,a . ,res) out))))))
 
+(define rember*o
+  (lambda (x ls out)
+    (conde
+      ((== '() ls) (== ls out))
+      ((fresh (a d b e)
+         (== `(,a . ,d) ls)
+         (conde
+           ((== `(,b . ,e) a)
+            (fresh (res0 res1)
+             (rember*o x a res0)
+             (rember*o x d res1)
+             (== `(,res0 . ,res1) out)))
+           ((== x a)
+             (rember*o x d out))
+           ((fresh (res)
+              (rember*o x d res)
+              (== `(,a . ,res) out)))))))))
+
+(comment
+ (time
+  (run 100 (q)
+       (fresh (x l)
+         (rember*o x l '((b) c d))
+         (== `(,x ,l) q))))
+ )
+
 (comment
  ;; works!
  ;; but not if appendo is the first goal
@@ -280,6 +306,23 @@
  )
 
 (comment
+ (define rember*o
+  (lambda (x ls out)
+    (conde
+      ((== '() ls) (== ls out))
+      ((fresh (a d b e)
+         (== `(,a . ,d) ls)
+         (conde
+           ((== `(,b . ,e) a)
+            (fresh (res0 res1)
+             (rember*o x a res0)
+             (rember*o x d res1)
+             (== `(,res0 . ,res1) out)))
+           ((== x a)
+             (rember*o x d out))
+           ((fresh (res)
+              (rember*o x d res)
+              (== `(,a . ,res) out)))))))))
  (run 6 (q)
       (fresh (l s)
         (appendo l s '(a b c d e))
@@ -310,4 +353,5 @@
 
  (run 5 (q)
       f2)
+
  )
