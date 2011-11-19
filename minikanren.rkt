@@ -239,6 +239,32 @@
           ((a) a)
           ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
 
+(define rember*o
+  (lambda (x ls out)
+    (conde
+      ((== '() ls) (== ls out))
+      ((fresh (a d b e)
+         (== `(,a . ,d) ls)
+         (conde
+           ((== `(,b . ,e) a)
+            (fresh (res0 res1)
+             (rember*o x a res0)
+             (rember*o x d res1)
+             (== `(,res0 . ,res1) out)))
+           ((== x a)
+             (rember*o x d out))
+           ((fresh (res)
+              (rember*o x d res)
+              (== `(,a . ,res) out)))))))))
+
+(comment
+ (time
+  (run 100 (q)
+       (fresh (x l)
+         (rember*o x l '((b) c d))
+         (== `(,x ,l) q))))
+ )
+
 (comment
  ;; 915ms, the same!
  (time
