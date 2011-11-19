@@ -35,10 +35,6 @@
 
 (define rhs cdr)
 
-(define-syntax inc
-  (syntax-rules ()
-    ((_ e) (lambdaf@ () e))))
-
 (define walk
   (lambda (v s)
     (cond
@@ -180,11 +176,10 @@
 (define-syntax conde
   (syntax-rules ()
     ((_ (g0 g ...) (g1 gp ...) ...)
-     (inc
-      (lambdag@ (a)
-        (mplus* (bind* (g0 a) g ...)
-                (bind* (g1 a) gp ...)
-                ...))))))
+     (lambdag@ (a)
+       (mplus* (bind* (g0 a) g ...)
+               (bind* (g1 a) gp ...)
+               ...)))))
 
 (define-syntax mplus*
   (syntax-rules ()
@@ -195,20 +190,19 @@
   (lambda (a-inf f)
     (case-inf a-inf
       (() (f))
-      ((fp) (inc (mplus (f) fp)))
+      ((fp) (mplus (f) fp))
       ((v) (let ((ap (vector-ref v 0))
                  (gp (vector-ref v 1)))
-             (inc (mplus (f) (lambdaf@ () (bind ap gp))))))
+             (mplus (f) (lambdaf@ () (bind ap gp)))))
       ((a) (choice a f))
       ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
 (define-syntax fresh
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
-     (inc
-      (lambdag@ (a)
-        (let ((x (var 'x)) ...)
-          (bind* (g0 a) g ...)))))))
+     (lambdag@ (a)
+       (let ((x (var 'x)) ...)
+         (bind* (g0 a) g ...))))))
 
 (define-syntax bind*
   (syntax-rules ()
@@ -222,10 +216,10 @@
   (lambda (a-inf g)
     (case-inf a-inf
       (() (mzero))
-      ((f) (inc (bind (f) g)))
+      ((f) (bind (f) g))
       ((v) (let ((ap (vector-ref v 0))
                  (gp (vector-ref v 1)))
-             (inc (vector (bind ap gp) g))))
+             (vector (bind ap gp) g)))
       ((a) (g a))
       ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
@@ -263,13 +257,7 @@
           (== `(,a . ,res) out)
           )))))
 
-(run #f (q)
-      (== q true))
-
 (comment
- (run #f (q)
-      (== q true))
-
  (run 6 (q)
       (fresh (l s)
         (appendo l s '(a b c d e))
