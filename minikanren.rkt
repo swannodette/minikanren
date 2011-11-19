@@ -342,9 +342,10 @@
 
 (comment
  (time (zebrao))
- 
+
+ ;; ~70ms
  (time
-  (run 100 (q)
+  (run 60 (q)
        (fresh (x l)
          (rember*o x l '((b) c d))
          (== `(,x ,l) q))))
