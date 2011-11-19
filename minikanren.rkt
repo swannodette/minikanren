@@ -207,9 +207,9 @@
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
      (lambdag@ (a)
-       (inc
-        (let ((x (var 'x)) ...)
-          (lazy-bind* (g0 a) g ...)))))))
+       (vector a
+         (lambda (a) (let ((x (var 'x)) ...)
+           (lazy-bind* (g0 a) g ...))))))))
 
 (define-syntax lazy-bind*
   (syntax-rules ()
@@ -395,7 +395,7 @@
 
   (run #f (q)
    nevero
-   (== #t #t))
+   (== #t #f))
  )
 
 (comment
@@ -440,6 +440,7 @@
         (== `(,l ,s) q)))
 
  ;; 915ms
+ ;; whoa we just got faster
  (time
   (do ((i 0 (+ i 1))) ((> i 4000)) 
     (run 6 (q)
