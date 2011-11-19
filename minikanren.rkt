@@ -387,6 +387,7 @@
 (comment
  (time (zebrao))
 
+ ;; 79ms
  (time
   (run 60 (q)
        (fresh (x l)
