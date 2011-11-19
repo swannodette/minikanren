@@ -263,16 +263,27 @@
           (== `(,a . ,res) out)
           )))))
 
-(run 7 (q)
+(comment
+ ;; works!
+ (run 7 (q)
       (fresh (l s)
         (appendo l s '(a b c d e))
         (== `(,l ,s) q)))
+ )
 
 (comment
  (run 6 (q)
       (fresh (l s)
         (appendo l s '(a b c d e))
         (== `(,l ,s) q)))
+
+ ;; 915ms
+ (time
+  (do ((i 0 (+ i 1))) ((> i 4000)) 
+    (run 6 (q)
+         (fresh (l s)
+           (appendo l s '(a b c d e))
+           (== `(,l ,s) q)))))
 
  ;; FIXME: weird interaction with conde
  (run #f (q)
