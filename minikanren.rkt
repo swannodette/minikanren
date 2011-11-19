@@ -255,59 +255,21 @@
           ((v) (let ((ap (vector-ref v 0))
                      (gp (vector-ref v 1)))
                  (take n (lambda () (bind ap gp)))))
-          ((a) a)
-          ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
+          ((a) (list a))
+          ((a f) (cons a (take (and n (- n 1)) f)))))))
 
-(run #f (q)
+(comment
+ ;; FIXME: weird interaction with conde
+ (run #f (q)
       (fresh (x)
        (conde
-         ((== x 2) (== q #t))
+         ((== x 1) (== q #t))
          ((== q #f)))
        (== x 1)))
 
-(comment
  (run #f (q)
       (fresh (x)
         (== x 1)
         (== q true)
-        (== x 2)))
-
-(length
- (run #f (q)
-      (fresh (x)
-        (conde
-          ((== x 1) (== q #t))
-          ((== x 1) (== q #f)))
         (== x 1)))
- )
- )
-
-(comment
- (let-values (((q) (vector 'q)))
-   (map
-    (lambda (a)
-      (display a) (display "\n")
-      (reify q a))
-    (take #f
-     (lambda ()
-       ((lambda (a)
-          (let-values ()
-            ((lambda (a)
-               (let-values (((x) (vector 'x)))
-                 (vector
-                  ((lambda (a)
-                     (let-values (((c456) (unify x 1 a)))
-                       (if c456
-                           ((lambda (a) a) c456)
-                           (let-values () #f))))
-                   a)
-                  (lambda (a)
-                    ((lambda (a)
-                       (let-values (((c457) (unify q true a)))
-                         (if c457
-                           ((lambda (a) a) c457)
-                           (let-values () #f))))
-                     a)))))
-             a)))
-        empty-s)))))
  )
