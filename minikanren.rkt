@@ -182,7 +182,7 @@
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
        (inc
-        (mplus* (lazy-bind* (g0 a) g ...)
+        (mplus* (inc (lazy-bind* (g0 a) g ...))
                 (lazy-bind* (g1 a) gp ...)
                 ...))))))
 
@@ -216,7 +216,8 @@
     ((_ (g0 s) g1 ...)
      (vector s
        (lambdag@ (a)
-         (bind* (g0 a) g1 ...))))))
+         (bind* (g0 a) g1 ...))))
+    ((_ s) s)))
 
 (define-syntax bind*
   (syntax-rules ()
@@ -372,6 +373,15 @@
               (rember*o x d res)
               (== `(,a . ,res) out)))))))))
 
+(define anyo
+  (lambda (g)
+    (fresh ()
+      (conde
+        (g succeed)
+        ((anyo g))))))
+
+(define nevero (anyo fail))
+
 (comment
  (time (zebrao))
 
@@ -381,15 +391,18 @@
          (rember*o x l '((b) c d))
          (== `(,x ,l) q))))
 
- (define nevero
-   (lambda ()
-     (fresh ()
-       (nevero))))
+(define anyo
+  (lambda (g)
+    (fresh ()
+      (conde
+        (g succeed)
+        ((anyo g))))))
+
+(define nevero (anyo fail))
 
  (run #f (q)
-   (nevero)
+   nevero
    (== #t #f))
-
  )
 
 (comment
@@ -427,6 +440,7 @@
            ((fresh (res)
               (rember*o x d res)
               (== `(,a . ,res) out)))))))))
+
  (run 6 (q)
       (fresh (l s)
         (appendo l s '(a b c d e))
