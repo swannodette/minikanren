@@ -728,9 +728,30 @@
       (*o x y r)
       (== `(,x ,y ,r) t))))
 
- ;; 17s
+ ;; 61ms for run 3
  (time
-  (run 9 (s)
+  (run 3 (s)
+    (fresh (b q r)
+      (logo '(0 0 1 0 0 0 1) b q r)
+      (>1o q)
+      (== `(,b ,q ,r) s))))
+
+ ;; 475ms for run 4
+ (time
+  (run 4 (s)
+    (fresh (b q r)
+      (logo '(0 0 1 0 0 0 1) b q r)
+      (>1o q)
+      (== `(,b ,q ,r) s))))
+
+ ;; 545 for run 5
+ ;; 1237 for run 6
+ ;; 5530 for run 7
+ ;; 17241 for run 8
+ ;; 17360 for run 9
+ ;; ? for run 10
+ (time
+  (run 10 (s)
     (fresh (b q r)
       (logo '(0 0 1 0 0 0 1) b q r)
       (>1o q)
