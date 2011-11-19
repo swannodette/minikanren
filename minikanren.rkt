@@ -181,10 +181,11 @@
   (syntax-rules ()
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
-       (inc
-        (mplus* (inc (lazy-bind* (g0 a) g ...))
-                (lazy-bind* (g1 a) gp ...)
-                ...))))))
+       (vector a 
+         (lambda (a)
+           (mplus* (lazy-bind* (g0 a) g ...)
+                   (lazy-bind* (g1 a) gp ...)
+                   ...)))))))
 
 (define-syntax mplus*
   (syntax-rules ()
@@ -377,10 +378,9 @@
 
 (define anyo
   (lambda (g)
-    (fresh ()
-      (conde
-        (g succeed)
-        ((anyo g))))))
+    (conde
+      (g succeed)
+      ((anyo g)))))
 
 (define nevero (anyo fail))
 
@@ -393,9 +393,9 @@
          (rember*o x l '((b) c d))
          (== `(,x ,l) q))))
 
- (run #f (q)
+  (run #f (q)
    nevero
-   (== #t #f))
+   (== #t #t))
  )
 
 (comment
