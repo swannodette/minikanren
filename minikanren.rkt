@@ -14,6 +14,10 @@
          inc
          case-inf)
 
+(define-syntax comment
+  (syntax-rules ()
+    ((_ ...) #f)))
+
 (define-syntax var
   (syntax-rules ()
     ((_ x) (vector x))))
@@ -234,3 +238,13 @@
           ((f) (take n f))
           ((a) a)
           ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
+
+(comment
+ ;; 915ms, the same!
+ (time
+  (do ((i 0 (+ i 1))) ((> i 4000)) 
+    (run 6 (q)
+         (fresh (l s)
+           (appendo l s '(a b c d e))
+           (== `(,l ,s) q)))))
+ )
