@@ -219,7 +219,7 @@
       ((f) (bind (f) g))
       ((v) (let ((ap (vector-ref v 0))
                  (gp (vector-ref v 1)))
-            (vector (bind ap g) gp)))
+            (vector (bind ap gp) g)))
       ((a) (g a))
       ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
@@ -247,6 +247,21 @@
           ((a) (list a))
           ((a f) (cons a (take (and n (- n 1)) f)))))))
 
+(define appendo
+   (lambda (l s out)
+     (conde
+       ((== l '()) (== s out))
+       ((fresh (a d res)
+          (== `(,a . ,d) l)
+          (appendo d s res)
+          (== `(,a . ,res) out)
+          )))))
+
+(run 6 (q)
+      (fresh (l s)
+        (appendo l s '(a b c d e))
+        (== `(,l ,s) q)))
+
 (comment
  ;; FIXME: weird interaction with conde
  (run #f (q)
@@ -254,4 +269,9 @@
        (conde
          ((== x 1) (== q #t))
          ((== x 2) (== q #f)))))
+
+ (run 7 (q)
+      (fresh (l s)
+        (appendo l s '(a b c d e))
+        (== `(,l ,s) q)))
  )
