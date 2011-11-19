@@ -373,6 +373,8 @@
               (rember*o x d res)
               (== `(,a . ,res) out)))))))))
 
+;; if we remove the wrapping fresh, divergence
+
 (define anyo
   (lambda (g)
     (fresh ()
@@ -386,19 +388,10 @@
  (time (zebrao))
 
  (time
-  (run 100 (q)
+  (run 60 (q)
        (fresh (x l)
          (rember*o x l '((b) c d))
          (== `(,x ,l) q))))
-
-(define anyo
-  (lambda (g)
-    (fresh ()
-      (conde
-        (g succeed)
-        ((anyo g))))))
-
-(define nevero (anyo fail))
 
  (run #f (q)
    nevero
