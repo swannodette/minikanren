@@ -13,6 +13,10 @@
          bind*
          case-inf)
 
+(define-syntax inc
+  (syntax-rules ()
+    ((_ e) (lambdaf@ () e))))
+
 (define-syntax comment
   (syntax-rules ()
     ((_ ...) #f)))
@@ -177,9 +181,10 @@
   (syntax-rules ()
     ((_ (g0 g ...) (g1 gp ...) ...)
      (lambdag@ (a)
-       (mplus* (bind* (g0 a) g ...)
-               (bind* (g1 a) gp ...)
-               ...)))))
+       (inc
+        (mplus* (bind* (g0 a) g ...)
+                (bind* (g1 a) gp ...)
+                ...))))))
 
 (define-syntax mplus*
   (syntax-rules ()
@@ -190,10 +195,10 @@
   (lambda (a-inf f)
     (case-inf a-inf
       (() (f))
-      ((fp) (mplus (f) fp))
+      ((fp) (inc (mplus (f) fp)))
       ((v) (let ((ap (vector-ref v 0))
                  (gp (vector-ref v 1)))
-             (mplus (f) (lambdaf@ () (bind ap gp)))))
+             (inc (mplus (f) (lambdaf@ () (bind ap gp))))))
       ((a) (choice a f))
       ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
@@ -201,8 +206,9 @@
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
      (lambdag@ (a)
-       (let ((x (var 'x)) ...)
-         (bind* (g0 a) g ...))))))
+       (inc
+        (let ((x (var 'x)) ...)
+          (bind* (g0 a) g ...)))))))
 
 (define-syntax bind*
   (syntax-rules ()
@@ -216,10 +222,10 @@
   (lambda (a-inf g)
     (case-inf a-inf
       (() (mzero))
-      ((f) (bind (f) g))
+      ((f) (inc (bind (f) g)))
       ((v) (let ((ap (vector-ref v 0))
                  (gp (vector-ref v 1)))
-             (vector (bind ap gp) g)))
+             (vector (inc (bind ap g)) gp)))
       ((a) (g a))
       ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
@@ -257,6 +263,11 @@
           (== `(,a . ,res) out)
           )))))
 
+(run 7 (q)
+      (fresh (l s)
+        (appendo l s '(a b c d e))
+        (== `(,l ,s) q)))
+
 (comment
  (run 6 (q)
       (fresh (l s)
@@ -269,9 +280,4 @@
        (conde
          ((== x 1) (== q #t))
          ((== x 2) (== q #f)))))
-
- (run 7 (q)
-      (fresh (l s)
-        (appendo l s '(a b c d e))
-        (== `(,l ,s) q)))
  )
