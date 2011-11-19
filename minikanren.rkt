@@ -13,13 +13,9 @@
          bind*
          case-inf)
 
-(define-syntax nom
+(define-syntax comment
   (syntax-rules ()
-    ((_ x) (vector x))))
-
-(define-syntax nom?
-  (syntax-rules ()
-    ((_ x) (vector? x))))
+    ((_ ...) #f)))
 
 (define-syntax var
   (syntax-rules ()
@@ -195,9 +191,9 @@
     (case-inf a-inf
       (() (f))
       ((fp) (mplus (f) fp))
-      ((v) (let ((a (vector-ref v 0))
-                 (g (vector-ref v 1)))
-             (vector (mplus a f) g)))
+      ((v) (let ((ap (vector-ref v 0))
+                 (gp (vector-ref v 1)))
+             (vector (mplus ap f) gp)))
       ((a) (choice a f))
       ((a fp) (choice a (lambdaf@ () (mplus (f) fp)))))))
 
@@ -221,21 +217,24 @@
     (case-inf a-inf
       (() (mzero))
       ((f) (bind (f) g))
-      ((v) (vector (bind (vector-ref v 0) g)
-                   (vector-ref v 1)))
+      ((v) (let ((ap (vector-ref v 0))
+                 (gp (vector-ref v 1)))
+            (vector (bind ap g) gp)))
       ((a) (g a))
       ((a f) (mplus (g a) (lambdaf@ () (bind (f) g)))))))
 
-(define-syntax run
-  (syntax-rules ()
-    ((_ n (x) g0 g ...)
-     (let ((x (var 'x)))
-       (map (lambda (a)
-              (reify x a))
-            (take n
-                  (lambdaf@ ()
-                    ((fresh () g0 g ...)
-                     empty-s))))))))
+(comment
+ (define-syntax run
+   (syntax-rules ()
+     ((_ n (x) g0 g ...)
+      (let ((x (var 'x)))
+        (map (lambda (a)
+               (reify x a))
+             (take n
+                   (lambdaf@ ()
+                     ((fresh () g0 g ...)
+                      empty-s))))))))
+ )
 
 (define-syntax run
   (syntax-rules ()
@@ -253,26 +252,34 @@
         (case-inf (f)
           (() '())
           ((f) (take n f))
-          ((v) (let ((a (vector-ref v 0))
-                     (g (vector-ref v 1)))
-                 (take n (lambda () (bind a g)))))
-          ((a) (list a))
+          ((v) (let ((ap (vector-ref v 0))
+                     (gp (vector-ref v 1)))
+                 (take n (lambda () (bind ap gp)))))
+          ((a) a)
           ((a f) (cons (car a) (take (and n (- n 1)) f)))))))
 
-(define-syntax comment
-  (syntax-rules ()
-    ((_ ...) #f)))
+(run #f (q)
+      (fresh (x)
+       (conde
+         ((== x 2) (== q #t))
+         ((== q #f)))
+       (== x 1)))
 
 (comment
  (run #f (q)
       (fresh (x)
         (== x 1)
-        (== q true)))
+        (== q true)
+        (== x 2)))
 
+(length
  (run #f (q)
-      (conde
-        ((== q #t))
-        ((== q #f))))
+      (fresh (x)
+        (conde
+          ((== x 1) (== q #t))
+          ((== x 1) (== q #f)))
+        (== x 1)))
+ )
  )
 
 (comment
